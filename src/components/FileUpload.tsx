@@ -127,7 +127,8 @@ const styles = {
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '12px',
-    marginTop: '16px'
+    marginTop: '16px',
+    marginBottom: '16px'
   },
   statsItem: {
     display: 'flex',
@@ -183,6 +184,19 @@ const styles = {
     fontSize: '12px',
     color: '#bdc3c7',
     lineHeight: '1.4'
+  },
+  buttonWrapper: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: '20px'
+  },
+  buttonWrapperMobile: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: '16px',
+    width: '100%'
   }
 };
 
@@ -267,23 +281,25 @@ const FileUpload: React.FC<FileUploadProps> = ({
         id="file-upload"
       />
       
-      <label htmlFor="file-upload">
-        <button
-          style={{
-            ...(isMobile ? styles.uploadButtonMobile : styles.uploadButton),
-            ...(isHovered ? styles.uploadButtonHover : {})
-          }}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          onClick={(e) => {
-            e.preventDefault();
-            document.getElementById('file-upload')?.click();
-          }}
-        >
-          <Upload style={{ width: '20px', height: '20px' }} />
-          Choose File
-        </button>
-      </label>
+      <div style={isMobile ? styles.buttonWrapperMobile : styles.buttonWrapper}>
+        <label htmlFor="file-upload">
+          <button
+            style={{
+              ...(isMobile ? styles.uploadButtonMobile : styles.uploadButton),
+              ...(isHovered ? styles.uploadButtonHover : {})
+            }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById('file-upload')?.click();
+            }}
+          >
+            <Upload style={{ width: '20px', height: '20px' }} />
+            Choose File
+          </button>
+        </label>
+      </div>
 
       <div style={styles.formatInfo}>
         <div style={styles.formatTitle}>

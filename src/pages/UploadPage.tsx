@@ -6,6 +6,8 @@ import { Target } from 'lucide-react';
 
 const UploadPage: React.FC = () => {
   const navigate = useNavigate();
+  const [isMobile, setIsMobile] = React.useState(false);
+  
   const {
     allQuestions,
     uploadedFileName,
@@ -18,6 +20,17 @@ const UploadPage: React.FC = () => {
     applyConfiguration,
     skipConfiguration
   } = useExam();
+
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
 
 
@@ -36,20 +49,48 @@ const UploadPage: React.FC = () => {
   const styles = {
     container: {
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%)',
+      background: 'linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #2c2c2c 100%)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '20px'
+      padding: '20px',
+      boxSizing: 'border-box' as const
+    },
+    containerMobile: {
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #2c2c2c 100%)',
+      display: 'flex',
+      flexDirection: 'column' as const,
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      padding: '16px 12px',
+      boxSizing: 'border-box' as const,
+      width: '100%',
+      maxWidth: '100%',
+      overflow: 'hidden'
     },
     content: {
       maxWidth: '800px',
       width: '100%'
     },
+    contentMobile: {
+      width: '100%',
+      maxWidth: '100%',
+      display: 'flex',
+      flexDirection: 'column' as const,
+      alignItems: 'center'
+    },
     header: {
       textAlign: 'center' as const,
       marginBottom: '40px',
       color: 'white'
+    },
+    headerMobile: {
+      textAlign: 'center' as const,
+      marginBottom: '24px',
+      color: 'white',
+      width: '100%',
+      padding: '0 8px'
     },
     title: {
       fontSize: '2.5rem',
@@ -60,22 +101,40 @@ const UploadPage: React.FC = () => {
       justifyContent: 'center',
       gap: '15px'
     },
+    titleMobile: {
+      fontSize: '1.8rem',
+      fontWeight: 'bold',
+      margin: '12px 0px 0px 0px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '10px',
+      flexWrap: 'wrap' as const,
+      lineHeight: '1.2'
+    },
     subtitle: {
       fontSize: '1.1rem',
       opacity: 0.9,
       marginTop: '10px'
+    },
+    subtitleMobile: {
+      fontSize: '0.95rem',
+      opacity: 0.9,
+      marginTop: '16px',
+      lineHeight: '1.4',
+      textAlign: 'center'
     }
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.content}>
-        <div style={styles.header}>
-          <h1 style={styles.title}>
-            <Target size={40} />
+    <div style={isMobile ? styles.containerMobile : styles.container}>
+      <div style={isMobile ? styles.contentMobile : styles.content}>
+        <div style={isMobile ? styles.headerMobile : styles.header}>
+          <h1 style={isMobile ? styles.titleMobile : styles.title}>
+            <Target size={isMobile ? 32 : 40} />
             Exam Preparation Tool
           </h1>
-          <p style={styles.subtitle}>
+          <p style={isMobile ? styles.subtitleMobile : styles.subtitle}>
             Upload your exam questions and start practicing
           </p>
         </div>

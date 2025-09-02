@@ -14,6 +14,18 @@ const styles = {
     flexWrap: 'wrap' as const,
     gap: '16px'
   },
+  containerMobile: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    padding: '16px 0',
+    borderTop: '1px solid #333',
+    marginTop: '16px',
+    gap: '12px',
+    width: '100%',
+    maxWidth: '100%',
+    boxSizing: 'border-box' as const
+  },
   buttonGroup: {
     display: 'flex',
     gap: '8px',
@@ -35,6 +47,24 @@ const styles = {
     gap: '4px',
     minWidth: '80px',
     justifyContent: 'center'
+  },
+  buttonMobile: {
+    backgroundColor: '#3498db',
+    color: 'white',
+    border: 'none',
+    padding: '8px 12px',
+    borderRadius: '8px',
+    fontSize: '12px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    minWidth: '60px',
+    maxWidth: '80px',
+    justifyContent: 'center',
+    flex: '1'
   },
   buttonDisabled: {
     backgroundColor: '#555',
@@ -59,6 +89,15 @@ const styles = {
     flex: '1',
     minWidth: '200px',
     maxWidth: '300px'
+  },
+  progressInfoMobile: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    gap: '6px',
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 'auto'
   },
   progressText: {
     fontSize: '14px',
@@ -172,14 +211,7 @@ const Navigation: React.FC<NavigationProps> = ({
     };
   };
 
-  const containerStyle = {
-    ...styles.container,
-    ...(isMobile ? {
-      flexDirection: 'column' as const,
-      gap: '12px',
-      padding: '16px 0'
-    } : {})
-  };
+  const containerStyle = isMobile ? styles.containerMobile : styles.container;
 
   const buttonGroupStyle = {
     ...styles.buttonGroup,
@@ -189,22 +221,10 @@ const Navigation: React.FC<NavigationProps> = ({
     } : {})
   };
 
-  const progressInfoStyle = {
-    ...styles.progressInfo,
-    ...(isMobile ? {
-      order: -1,
-      width: '100%',
-      minWidth: 'auto'
-    } : {})
-  };
+  const progressInfoStyle = isMobile ? styles.progressInfoMobile : styles.progressInfo;
 
   const buttonStyle = (baseStyle: any) => ({
-    ...baseStyle,
-    ...(isMobile ? {
-      fontSize: '12px',
-      padding: '6px 10px',
-      minWidth: '70px'
-    } : {})
+    ...(isMobile ? styles.buttonMobile : baseStyle)
   });
 
   return (
@@ -230,13 +250,12 @@ const Navigation: React.FC<NavigationProps> = ({
       {/* Navigation buttons container */}
       <div style={{
         display: 'flex',
-        justifyContent: 'space-between',
+        justifyContent: isMobile ? 'center' : 'space-between',
         alignItems: 'center',
         width: '100%',
-        ...(isMobile ? {
-          justifyContent: 'center',
-          gap: '16px'
-        } : {})
+        maxWidth: '100%',
+        gap: isMobile ? '12px' : '0',
+        boxSizing: 'border-box' as const
       }}>
         {/* Left side - Previous button and jump to first */}
         <div style={buttonGroupStyle}>

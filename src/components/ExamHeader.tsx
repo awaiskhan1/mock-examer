@@ -11,6 +11,17 @@ const styles = {
     border: '1px solid #333',
     marginBottom: '20px'
   },
+  containerMobile: {
+    backgroundColor: '#1a1a1a',
+    padding: '12px',
+    borderRadius: '8px',
+    border: '1px solid #333',
+    marginBottom: '16px',
+    width: '100%',
+    maxWidth: '100%',
+    boxSizing: 'border-box' as const,
+    overflow: 'hidden'
+  },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -211,7 +222,7 @@ const ExamHeader: React.FC<ExamHeaderProps> = ({
   };
 
   return (
-    <div style={styles.container}>
+    <div style={isMobile ? styles.containerMobile : styles.container}>
       <div style={styles.header}>
         <div style={styles.titleSection}>
           <Target style={styles.icon} />

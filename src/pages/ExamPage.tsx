@@ -50,23 +50,55 @@ const ExamPage: React.FC = () => {
   const canGoNext = currentQuestionIndex < questions.length - 1;
   const canGoPrevious = currentQuestionIndex > 0;
 
+  // Mobile detection
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const styles = {
     container: {
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%)',
-      padding: '20px'
+      padding: '20px',
+      width: '100%',
+      maxWidth: '100vw',
+      overflowX: 'hidden' as const
+    },
+    containerMobile: {
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%)',
+      padding: '12px',
+      width: '100vw',
+      maxWidth: '100vw',
+      overflowX: 'hidden' as const,
+      boxSizing: 'border-box' as const
     },
     content: {
       maxWidth: '1000px',
-      margin: '0 auto'
+      margin: '0 auto',
+      width: '100%'
+    },
+    contentMobile: {
+      maxWidth: '100%',
+      margin: '0 auto',
+      width: '100%',
+      padding: '0 4px'
     }
   };
 
   // Show loading if no questions
   if (questions.length === 0) {
     return (
-      <div style={styles.container}>
-        <div style={styles.content}>
+      <div style={isMobile ? styles.containerMobile : styles.container}>
+        <div style={isMobile ? styles.contentMobile : styles.content}>
           <div style={{ textAlign: 'center', color: 'white', marginTop: '50px' }}>
             <p>Loading exam...</p>
           </div>
@@ -81,8 +113,8 @@ const ExamPage: React.FC = () => {
     const incorrect = total - correct;
     
     return (
-      <div style={styles.container}>
-        <div style={styles.content}>
+      <div style={isMobile ? styles.containerMobile : styles.container}>
+        <div style={isMobile ? styles.contentMobile : styles.content}>
           <ExamHeader
             uploadedFileName={uploadedFileName}
             currentQuestionIndex={currentQuestionIndex}
@@ -107,8 +139,8 @@ const ExamPage: React.FC = () => {
 
   // Show exam interface
   return (
-    <div style={styles.container}>
-      <div style={styles.content}>
+    <div style={isMobile ? styles.containerMobile : styles.container}>
+      <div style={isMobile ? styles.contentMobile : styles.content}>
         <ExamHeader
           uploadedFileName={uploadedFileName}
           currentQuestionIndex={currentQuestionIndex}
