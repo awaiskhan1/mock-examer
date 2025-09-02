@@ -16,28 +16,39 @@ export class PDFService {
    * Generates a comprehensive exam report PDF
    */
   static generateExamReport(questions: Question[], userAnswers: UserAnswers): void {
-    const pdf = new jsPDF();
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const { margin } = this.PAGE_CONFIG;
-    const maxWidth = pageWidth - 2 * margin;
-    let yPosition = margin;
+    try {
+      // Initialize jsPDF with explicit options for better compatibility
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const { margin } = this.PAGE_CONFIG;
+      const maxWidth = pageWidth - 2 * margin;
+      let yPosition = margin;
 
-    // Set dark theme background
-    this.setDarkBackground(pdf, pageWidth, pageHeight);
+      // Set dark theme background
+      this.setDarkBackground(pdf, pageWidth, pageHeight);
 
-    // Generate title
-    yPosition = this.addTitle(pdf, pageWidth, yPosition);
+      // Generate title
+      yPosition = this.addTitle(pdf, pageWidth, yPosition);
 
-    // Generate summary section
-    yPosition = this.addSummary(pdf, userAnswers, margin, yPosition);
+      // Generate summary section
+      yPosition = this.addSummary(pdf, userAnswers, margin, yPosition);
 
-    // Generate detailed results
-    yPosition = this.addDetailedResults(pdf, questions, userAnswers, margin, maxWidth, yPosition, pageWidth, pageHeight);
+      // Generate detailed results
+      yPosition = this.addDetailedResults(pdf, questions, userAnswers, margin, maxWidth, yPosition, pageWidth, pageHeight);
 
-    // Save the PDF
-    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-    pdf.save(`exam-report-${timestamp}.pdf`);
+      // Save the PDF
+      const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+      pdf.save(`exam-report-${timestamp}.pdf`);
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      throw new Error('Failed to generate PDF. This might be due to browser compatibility issues.');
+    }
   }
 
   /**
@@ -229,17 +240,27 @@ export class PDFService {
    * Generates a quick summary PDF (lighter version)
    */
   static generateQuickSummary(userAnswers: UserAnswers): void {
-    const pdf = new jsPDF();
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 20;
-    let yPosition = margin;
+    try {
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      let yPosition = margin;
 
-    this.setDarkBackground(pdf, pageWidth, pageHeight);
-    yPosition = this.addTitle(pdf, pageWidth, yPosition);
-    this.addSummary(pdf, userAnswers, margin, yPosition);
+      this.setDarkBackground(pdf, pageWidth, pageHeight);
+      yPosition = this.addTitle(pdf, pageWidth, yPosition);
+      this.addSummary(pdf, userAnswers, margin, yPosition);
 
-    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-    pdf.save(`exam-summary-${timestamp}.pdf`);
+      const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+      pdf.save(`exam-summary-${timestamp}.pdf`);
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      throw new Error('Failed to generate PDF summary. This might be due to browser compatibility issues.');
+    }
   }
 }
