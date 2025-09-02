@@ -725,6 +725,18 @@ function App() {
           </div>
           <div style={styles.buttonGroup}>
             <button
+              onClick={() => {
+                setQuestions([]);
+                setUserAnswers({});
+                setCurrentQuestionIndex(0);
+                setUploadedFileName('');
+                setShowConfigModal(false);
+              }}
+              className="btn-secondary"
+            >
+              Back to Upload
+            </button>
+            <button
               onClick={generatePDF}
               disabled={answeredCount === 0}
               className="btn-primary"

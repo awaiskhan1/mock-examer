@@ -1,0 +1,132 @@
+[
+  {
+    "question_number": 1,
+    "topic": "EC2",
+    "question": "Which of the following is a benefit of using Amazon EC2 instances?",
+    "options": {
+      "A": "Automatic scaling without configuration",
+      "B": "Pay-as-you-go pricing model",
+      "C": "Unlimited storage capacity",
+      "D": "Built-in database management"
+    },
+    "correct_answer": "B",
+    "explanation": "Amazon EC2 follows a pay-as-you-go pricing model where you only pay for the compute time you use, making it cost-effective for varying workloads."
+  },
+  {
+    "question_number": 2,
+    "topic": "S3",
+    "question": "What is the maximum size of a single object that can be stored in Amazon S3?",
+    "options": {
+      "A": "5 GB",
+      "B": "5 TB",
+      "C": "100 GB",
+      "D": "1 TB"
+    },
+    "correct_answer": "B",
+    "explanation": "Amazon S3 supports objects up to 5 TB in size. For objects larger than 100 MB, multipart upload is recommended."
+  },
+  {
+    "question_number": 3,
+    "topic": "IAM",
+    "question": "Which AWS service is used to manage user permissions and access to AWS resources?",
+    "options": {
+      "A": "AWS CloudTrail",
+      "B": "AWS Identity and Access Management (IAM)",
+      "C": "AWS Config",
+      "D": "AWS CloudWatch"
+    },
+    "correct_answer": "B",
+    "explanation": "AWS IAM (Identity and Access Management) is the service that enables you to manage access to AWS services and resources securely."
+  },
+  {
+    "question_number": 4,
+    "topic": "VPC",
+    "question": "What is the purpose of a VPC (Virtual Private Cloud) in AWS?",
+    "options": {
+      "A": "To provide a logically isolated section of the AWS Cloud",
+      "B": "To automatically scale applications",
+      "C": "To monitor application performance",
+      "D": "To backup data automatically"
+    },
+    "correct_answer": "A",
+    "explanation": "A VPC provides a logically isolated section of the AWS Cloud where you can launch AWS resources in a virtual network that you define."
+  },
+  {
+    "question_number": 5,
+    "topic": "Lambda",
+    "question": "What is the maximum execution time for an AWS Lambda function?",
+    "options": {
+      "A": "5 minutes",
+      "B": "10 minutes",
+      "C": "15 minutes",
+      "D": "30 minutes"
+    },
+    "correct_answer": "C",
+    "explanation": "AWS Lambda functions have a maximum execution time of 15 minutes (900 seconds)."
+  },
+  {
+    "question_number": 6,
+    "topic": "RDS",
+    "question": "Which of the following databases is NOT supported by Amazon RDS?",
+    "options": {
+      "A": "MySQL",
+      "B": "PostgreSQL",
+      "C": "MongoDB",
+      "D": "Oracle"
+    },
+    "correct_answer": "C",
+    "explanation": "MongoDB is a NoSQL database and is not supported by Amazon RDS. MongoDB is available through Amazon DocumentDB, which is MongoDB-compatible."
+  },
+  {
+    "question_number": 7,
+    "topic": "CloudFront",
+    "question": "What is the primary purpose of Amazon CloudFront?",
+    "options": {
+      "A": "Database management",
+      "B": "Content delivery network (CDN)",
+      "C": "Server monitoring",
+      "D": "User authentication"
+    },
+    "correct_answer": "B",
+    "explanation": "Amazon CloudFront is a content delivery network (CDN) service that delivers data, videos, applications, and APIs to customers globally with low latency."
+  },
+  {
+    "question_number": 8,
+    "topic": "Auto Scaling",
+    "question": "Which AWS service automatically adjusts the number of EC2 instances based on demand?",
+    "options": {
+      "A": "AWS Auto Scaling",
+      "B": "AWS CloudWatch",
+      "C": "AWS Load Balancer",
+      "D": "AWS Config"
+    },
+    "correct_answer": "A",
+    "explanation": "AWS Auto Scaling monitors your applications and automatically adjusts capacity to maintain steady, predictable performance at the lowest possible cost."
+  },
+  {
+    "question_number": 9,
+    "topic": "Route 53",
+    "question": "What type of service is Amazon Route 53?",
+    "options": {
+      "A": "Content delivery network",
+      "B": "Domain Name System (DNS) web service",
+      "C": "Load balancing service",
+      "D": "Database service"
+    },
+    "correct_answer": "B",
+    "explanation": "Amazon Route 53 is a scalable Domain Name System (DNS) web service designed to route end users to Internet applications."
+  },
+  {
+    "question_number": 10,
+    "topic": "CloudWatch",
+    "question": "What is the primary function of Amazon CloudWatch?",
+    "options": {
+      "A": "Data storage",
+      "B": "Monitoring and observability",
+      "C": "User management",
+      "D": "Network security"
+    },
+    "correct_answer": "B",
+    "explanation": "Amazon CloudWatch is a monitoring and observability service that provides data and actionable insights for AWS resources and applications."
+  }
+]
