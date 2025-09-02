@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf';
-import { Question, UserAnswers } from '@/types';
+import { Question, UserAnswers, UserAnswer } from '@/types';
 import { ExamService } from './examService';
 
 export class PDFService {
@@ -134,7 +134,7 @@ export class PDFService {
   private static addQuestionDetails(
     pdf: jsPDF,
     question: Question,
-    answerData: { userAnswer: string; isCorrect: boolean },
+    answerData: UserAnswer,
     margin: number,
     maxWidth: number,
     yPosition: number
@@ -161,10 +161,16 @@ export class PDFService {
     // Options
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(this.PAGE_CONFIG.smallFontSize);
-    question.options.forEach((option, index) => {
-      const optionLetter = ExamService.getOptionLetter(index);
-      const isCorrect = question.correct_answers.includes(optionLetter);
-      const isUserAnswer = answerData.userAnswer.startsWith(optionLetter);
+    
+    // Handle both array and object format for options
+    const optionsToProcess = Array.isArray(question.options) 
+      ? question.options.map((option, index) => ({ letter: ExamService.getOptionLetter(index), text: option }))
+      : Object.entries(question.options).map(([letter, text]) => ({ letter, text }));
+    
+    optionsToProcess.forEach(({ letter, text }) => {
+      const isCorrect = question.correct_answers.includes(letter);
+      const userAnswerString = answerData.userAnswers.join(', ');
+      const isUserAnswer = answerData.userAnswers.includes(letter);
       
       // Set color based on correctness
       if (isCorrect) {
@@ -175,7 +181,7 @@ export class PDFService {
         pdf.setTextColor(209, 213, 219); // Gray for other options
       }
       
-      const optionText = `${optionLetter}. ${option}`;
+      const optionText = `${letter}. ${text}`;
       const optionLines = pdf.splitTextToSize(optionText, maxWidth - 10);
       optionLines.forEach((line: string) => {
         pdf.text(line, margin + 5, yPosition);
@@ -190,10 +196,10 @@ export class PDFService {
     
     if (answerData.isCorrect) {
       pdf.setTextColor(16, 185, 129); // Green
-      pdf.text(`Your Answer: ${answerData.userAnswer} ✓ Correct`, margin, yPosition);
+      pdf.text(`Your Answer: ${answerData.userAnswers.join(', ')} ✓ Correct`, margin, yPosition);
     } else {
       pdf.setTextColor(239, 68, 68); // Red
-      pdf.text(`Your Answer: ${answerData.userAnswer} ✗ Incorrect`, margin, yPosition);
+      pdf.text(`Your Answer: ${answerData.userAnswers.join(', ')} ✗ Incorrect`, margin, yPosition);
       yPosition += 4;
       pdf.setTextColor(16, 185, 129);
       pdf.text(`Correct Answer(s): ${question.correct_answers.join(', ')}`, margin, yPosition);

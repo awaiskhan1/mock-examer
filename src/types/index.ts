@@ -2,7 +2,7 @@
 export interface Question {
   question_number: number;
   question: string;
-  options: string[];
+  options: string[] | { [key: string]: string };
   correct_answers: string[];
   explanation?: string;
   topic?: string;
