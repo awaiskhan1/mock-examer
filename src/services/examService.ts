@@ -78,10 +78,21 @@ export class ExamService {
   }
 
   /**
-   * Checks if an answer is correct for a given question
+   * Checks if answers are correct for a given question
    */
-  static isAnswerCorrect(question: Question, answer: string): boolean {
-    return question.correct_answers.includes(answer.charAt(0));
+  static isAnswerCorrect(question: Question, answers: string[]): boolean {
+    // For single correct answer questions, user must select exactly one correct answer
+    if (question.correct_answers.length === 1) {
+      return answers.length === 1 && question.correct_answers.includes(answers[0].charAt(0));
+    }
+    
+    // For multiple correct answer questions, user must select all correct answers and no incorrect ones
+    const userAnswerLetters = answers.map(a => a.charAt(0));
+    const correctAnswerLetters = question.correct_answers;
+    
+    return userAnswerLetters.length === correctAnswerLetters.length &&
+           userAnswerLetters.every(letter => correctAnswerLetters.includes(letter)) &&
+           correctAnswerLetters.every(letter => userAnswerLetters.includes(letter));
   }
 
   /**

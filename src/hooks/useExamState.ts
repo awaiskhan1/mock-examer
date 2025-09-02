@@ -11,7 +11,7 @@ export const useExamState = () => {
   const [allQuestions, setAllQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<UserAnswers>({});
-  const [selectedAnswer, setSelectedAnswer] = useState<string>('');
+  const [selectedAnswers, setSelectedAnswers] = useState<string[]>([]);
   const [showFeedback, setShowFeedback] = useState(false);
   const [isAnswered, setIsAnswered] = useState(false);
   
@@ -76,11 +76,11 @@ export const useExamState = () => {
     if (currentQuestion) {
       const savedAnswer = userAnswers[currentQuestion.question_number];
       if (savedAnswer) {
-        setSelectedAnswer(savedAnswer.userAnswer);
+        setSelectedAnswers(savedAnswer.userAnswers);
         setIsAnswered(true);
         setShowFeedback(true);
       } else {
-        setSelectedAnswer('');
+        setSelectedAnswers([]);
         setIsAnswered(false);
         setShowFeedback(false);
       }
@@ -103,7 +103,7 @@ export const useExamState = () => {
     allQuestions,
     currentQuestionIndex,
     userAnswers,
-    selectedAnswer,
+    selectedAnswers,
     showFeedback,
     isAnswered,
     uploadedFileName,
@@ -115,7 +115,7 @@ export const useExamState = () => {
     setAllQuestions,
     setCurrentQuestionIndex,
     setUserAnswers,
-    setSelectedAnswer,
+    setSelectedAnswers,
     setShowFeedback,
     setIsAnswered,
     setUploadedFileName,

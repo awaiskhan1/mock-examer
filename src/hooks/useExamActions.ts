@@ -11,7 +11,7 @@ interface UseExamActionsProps {
   allQuestions: Question[];
   currentQuestionIndex: number;
   userAnswers: UserAnswers;
-  selectedAnswer: string;
+  selectedAnswers: string[];
   examConfig: ExamConfig;
   
   // Setters
@@ -19,7 +19,7 @@ interface UseExamActionsProps {
   setAllQuestions: (questions: Question[]) => void;
   setCurrentQuestionIndex: (index: number) => void;
   setUserAnswers: (answers: UserAnswers | ((prev: UserAnswers) => UserAnswers)) => void;
-  setSelectedAnswer: (answer: string) => void;
+  setSelectedAnswers: (answers: string[] | ((prev: string[]) => string[])) => void;
   setShowFeedback: (show: boolean) => void;
   setIsAnswered: (answered: boolean) => void;
   setUploadedFileName: (fileName: string) => void;
@@ -36,13 +36,13 @@ export const useExamActions = (props: UseExamActionsProps) => {
     allQuestions,
     currentQuestionIndex,
     userAnswers,
-    selectedAnswer,
+    selectedAnswers,
     examConfig,
     setQuestions,
     setAllQuestions,
     setCurrentQuestionIndex,
     setUserAnswers,
-    setSelectedAnswer,
+    setSelectedAnswers,
     setShowFeedback,
     setIsAnswered,
     setUploadedFileName,
@@ -68,26 +68,132 @@ export const useExamActions = (props: UseExamActionsProps) => {
     reader.onload = (e) => {
       try {
         const content = e.target?.result as string;
-        const data = JSON.parse(content);
+        const rawData = JSON.parse(content);
         
-        // Validate question data
-        const dataValidation = ValidationUtils.validateQuestionData(data);
+        // Transform data format if needed
+        const transformedData = rawData.map((question: any) => {
+          // Handle options format transformation
+          let options: string[];
+          let letterMapping: { [key: string]: number } = {}; // Maps original letter to new position
+          
+          if (Array.isArray(question.options)) {
+            // Check if options already have letter prefixes (e.g., "A. text", "B. text")
+            // First validate that all options are strings
+            if (question.options.some((option: any) => typeof option !== 'string')) {
+              throw new Error(`Question at index ${question.question_number - 1} has non-string options: ${JSON.stringify(question.options)}`);
+            }
+            
+            const hasLetterPrefixes = question.options.some((option: any) => 
+              typeof option === 'string' && /^[A-Z]\. /.test(option)
+            );
+            
+            if (hasLetterPrefixes) {
+              // Create mapping from original letters to their content
+              const optionMap: { [key: string]: string } = {};
+              question.options.forEach((option: any) => {
+                const letter = option.charAt(0);
+                const text = option.replace(/^[A-Z]\. /, '');
+                // Ensure text is not empty after removing prefix
+                if (text.trim().length === 0) {
+                  throw new Error(`Question at index ${question.question_number - 1} has option '${option}' with no content after letter prefix`);
+                }
+                optionMap[letter] = text;
+              });
+              
+              // Sort letters alphabetically and create the options array
+              const sortedLetters = Object.keys(optionMap).sort();
+              options = sortedLetters.map(letter => optionMap[letter]);
+              
+              // Create mapping from original letter to new position (A=0, B=1, C=2, D=3)
+              sortedLetters.forEach((letter, index) => {
+                letterMapping[letter] = index;
+              });
+            } else {
+              options = question.options;
+            }
+          } else if (typeof question.options === 'object') {
+            // Convert object format {"A": "text", "B": "text"} to array
+            // Sort keys to maintain A, B, C, D order
+            const sortedKeys = Object.keys(question.options).sort();
+            options = sortedKeys.map(key => question.options[key]);
+          } else {
+            throw new Error(`Invalid options format in question ${question.question_number}`);
+          }
+
+          // Handle correct_answer(s) format transformation
+          let correct_answers: string[];
+          if (Array.isArray(question.correct_answers)) {
+            // If we have letter mapping, convert letter-based answers to position-based
+            if (Object.keys(letterMapping).length > 0) {
+              correct_answers = question.correct_answers.map((answer: any) => {
+                if (typeof answer === 'string' && letterMapping.hasOwnProperty(answer)) {
+                  // Convert letter to corresponding position letter (A, B, C, D)
+                  return String.fromCharCode(65 + letterMapping[answer]); // 65 is 'A'
+                }
+                return answer;
+              });
+            } else {
+              correct_answers = question.correct_answers;
+            }
+          } else if (question.correct_answer) {
+            // Convert single correct_answer to array
+            let singleAnswer = question.correct_answer;
+            if (Object.keys(letterMapping).length > 0 && typeof singleAnswer === 'string' && letterMapping.hasOwnProperty(singleAnswer)) {
+              singleAnswer = String.fromCharCode(65 + letterMapping[singleAnswer]);
+            }
+            correct_answers = [singleAnswer];
+          } else if (question.correct_answers) {
+            // Handle case where it might be a string
+            if (typeof question.correct_answers === 'string') {
+              let stringAnswer = question.correct_answers;
+              if (Object.keys(letterMapping).length > 0 && letterMapping.hasOwnProperty(stringAnswer)) {
+                stringAnswer = String.fromCharCode(65 + letterMapping[stringAnswer]);
+              }
+              correct_answers = [stringAnswer];
+            } else {
+              // If we have letter mapping, convert letter-based answers to position-based
+              if (Object.keys(letterMapping).length > 0) {
+                correct_answers = question.correct_answers.map((answer: any) => {
+                  if (typeof answer === 'string' && letterMapping.hasOwnProperty(answer)) {
+                    return String.fromCharCode(65 + letterMapping[answer]);
+                  }
+                  return answer;
+                });
+              } else {
+                correct_answers = question.correct_answers;
+              }
+            }
+          } else {
+            throw new Error(`No correct answer found in question ${question.question_number}`);
+          }
+
+          return {
+            ...question,
+            options,
+            correct_answers
+          };
+        });
+        
+        // Validate transformed question data
+        const dataValidation = ValidationUtils.validateQuestionData(transformedData);
         if (!dataValidation.isValid) {
           alert(dataValidation.error);
           return;
         }
 
-        setAllQuestions(data);
+        setAllQuestions(transformedData);
         setUploadedFileName(file.name);
         // Set default exam configuration with proper values
         setExamConfig({
           startRange: '1',
-          endRange: data.length.toString(),
+          endRange: transformedData.length.toString(),
           randomize: false,
           randomCount: ''
         });
       } catch (error) {
-        alert('Invalid JSON file. Please check the file format.');
+        console.error('JSON parsing error:', error);
+        console.error('File content preview:', reader.result?.toString().substring(0, 500));
+        alert(`Invalid JSON file. Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     };
     reader.readAsText(file);
@@ -97,20 +203,28 @@ export const useExamActions = (props: UseExamActionsProps) => {
    * Handle answer selection
    */
   const handleAnswerSelect = useCallback((answer: string) => {
-    setSelectedAnswer(answer);
-  }, [setSelectedAnswer]);
+    setSelectedAnswers((prev: string[]) => {
+      if (prev.includes(answer)) {
+        // Remove answer if already selected
+        return prev.filter((a: string) => a !== answer);
+      } else {
+        // Add answer if not selected
+        return [...prev, answer];
+      }
+    });
+  }, [setSelectedAnswers]);
 
   /**
    * Handle answer submission
    */
   const handleSubmitAnswer = useCallback(() => {
-    if (!selectedAnswer || !questions[currentQuestionIndex]) return;
+    if (selectedAnswers.length === 0 || !questions[currentQuestionIndex]) return;
 
     const currentQuestion = questions[currentQuestionIndex];
-    const isCorrect = ExamService.isAnswerCorrect(currentQuestion, selectedAnswer);
+    const isCorrect = ExamService.isAnswerCorrect(currentQuestion, selectedAnswers);
     
     const userAnswer: UserAnswer = {
-      userAnswer: selectedAnswer,
+      userAnswers: selectedAnswers,
       isCorrect,
       timestamp: new Date().toISOString()
     };
@@ -122,7 +236,7 @@ export const useExamActions = (props: UseExamActionsProps) => {
 
     setIsAnswered(true);
     setShowFeedback(true);
-  }, [selectedAnswer, questions, currentQuestionIndex, setUserAnswers, setIsAnswered, setShowFeedback]);
+  }, [selectedAnswers, questions, currentQuestionIndex, setUserAnswers, setIsAnswered, setShowFeedback]);
 
   /**
    * Handle next question navigation
@@ -163,7 +277,7 @@ export const useExamActions = (props: UseExamActionsProps) => {
     setUploadedFileName('');
     setCurrentQuestionIndex(0);
     setUserAnswers({});
-    setSelectedAnswer('');
+    setSelectedAnswers([]);
     setShowFeedback(false);
     setIsAnswered(false);
     setExamConfig({
@@ -181,7 +295,7 @@ export const useExamActions = (props: UseExamActionsProps) => {
     setUploadedFileName,
     setCurrentQuestionIndex,
     setUserAnswers,
-    setSelectedAnswer,
+    setSelectedAnswers,
     setShowFeedback,
     setIsAnswered,
     setExamConfig
@@ -212,7 +326,7 @@ export const useExamActions = (props: UseExamActionsProps) => {
     setQuestions(filteredQuestions);
     setCurrentQuestionIndex(0);
     setUserAnswers({});
-    setSelectedAnswer('');
+    setSelectedAnswers([]);
     setShowFeedback(false);
     setIsAnswered(false);
     setShowConfigModal(false);
@@ -222,7 +336,7 @@ export const useExamActions = (props: UseExamActionsProps) => {
     setQuestions,
     setCurrentQuestionIndex,
     setUserAnswers,
-    setSelectedAnswer,
+    setSelectedAnswers,
     setShowFeedback,
     setIsAnswered,
     setShowConfigModal
@@ -235,7 +349,7 @@ export const useExamActions = (props: UseExamActionsProps) => {
     setQuestions(allQuestions);
     setCurrentQuestionIndex(0);
     setUserAnswers({});
-    setSelectedAnswer('');
+    setSelectedAnswers([]);
     setShowFeedback(false);
     setIsAnswered(false);
     setShowConfigModal(false);
@@ -244,7 +358,7 @@ export const useExamActions = (props: UseExamActionsProps) => {
     setQuestions,
     setCurrentQuestionIndex,
     setUserAnswers,
-    setSelectedAnswer,
+    setSelectedAnswers,
     setShowFeedback,
     setIsAnswered,
     setShowConfigModal
@@ -261,7 +375,7 @@ export const useExamActions = (props: UseExamActionsProps) => {
       setUploadedFileName('');
       setCurrentQuestionIndex(0);
       setUserAnswers({});
-      setSelectedAnswer('');
+      setSelectedAnswers([]);
       setShowFeedback(false);
       setIsAnswered(false);
       setShowConfigModal(false);
@@ -280,7 +394,7 @@ export const useExamActions = (props: UseExamActionsProps) => {
     setUploadedFileName,
     setCurrentQuestionIndex,
     setUserAnswers,
-    setSelectedAnswer,
+    setSelectedAnswers,
     setShowFeedback,
     setIsAnswered,
     setShowConfigModal,

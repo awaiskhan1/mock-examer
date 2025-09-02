@@ -10,7 +10,7 @@ export interface Question {
 }
 
 export interface UserAnswer {
-  userAnswer: string;
+  userAnswers: string[];
   isCorrect: boolean;
   timestamp: string;
 }
@@ -30,7 +30,7 @@ export interface ExamConfig {
 // Component props types
 export interface QuestionCardProps {
   question: Question;
-  selectedAnswer: string;
+  selectedAnswers: string[];
   showFeedback: boolean;
   isAnswered: boolean;
   onAnswerSelect: (answer: string) => void;
@@ -121,7 +121,7 @@ export interface UseExamState {
   allQuestions: Question[];
   currentQuestionIndex: number;
   userAnswers: UserAnswers;
-  selectedAnswer: string;
+  selectedAnswers: string[];
   showFeedback: boolean;
   isAnswered: boolean;
   uploadedFileName: string;
@@ -134,7 +134,7 @@ export interface UseExamActions {
   setAllQuestions: (questions: Question[]) => void;
   setCurrentQuestionIndex: (index: number) => void;
   setUserAnswers: (answers: UserAnswers | ((prev: UserAnswers) => UserAnswers)) => void;
-  setSelectedAnswer: (answer: string) => void;
+  setSelectedAnswers: (answers: string[] | ((prev: string[]) => string[])) => void;
   setShowFeedback: (show: boolean) => void;
   setIsAnswered: (answered: boolean) => void;
   setUploadedFileName: (fileName: string) => void;

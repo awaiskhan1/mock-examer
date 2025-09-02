@@ -217,7 +217,7 @@ const styles = {
 
 const QuestionCard: React.FC<QuestionCardProps> = ({
   question,
-  selectedAnswer,
+  selectedAnswers,
   showFeedback,
   isAnswered,
   onAnswerSelect,
@@ -238,7 +238,10 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   const [isHovered, setIsHovered] = React.useState(false);
   const formattedOptions = FormattingUtils.formatQuestionOptions(question.options);
   const correctAnswerLetters = question.correct_answers.map(ans => ans.charAt(0).toUpperCase());
-  const isSelectedCorrect = correctAnswerLetters.includes(selectedAnswer.charAt(0).toUpperCase());
+  const selectedAnswerLetters = selectedAnswers.map(ans => ans.charAt(0).toUpperCase());
+  const isSelectedCorrect = selectedAnswerLetters.length === correctAnswerLetters.length &&
+    selectedAnswerLetters.every(letter => correctAnswerLetters.includes(letter)) &&
+    correctAnswerLetters.every(letter => selectedAnswerLetters.includes(letter));
 
   const getOptionStyle = (optionLetter: string) => {
     let style = { ...styles.option };
@@ -246,10 +249,10 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     if (showFeedback) {
       if (correctAnswerLetters.includes(optionLetter)) {
         style = { ...style, ...styles.optionCorrect };
-      } else if (selectedAnswer.charAt(0).toUpperCase() === optionLetter) {
+      } else if (selectedAnswerLetters.includes(optionLetter)) {
         style = { ...style, ...styles.optionIncorrect };
       }
-    } else if (selectedAnswer.charAt(0).toUpperCase() === optionLetter) {
+    } else if (selectedAnswerLetters.includes(optionLetter)) {
       style = { ...style, ...styles.optionSelected };
     }
     
@@ -262,7 +265,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     if (showFeedback) {
       if (correctAnswerLetters.includes(optionLetter)) {
         style = { ...style, ...styles.optionLetterCorrect };
-      } else if (selectedAnswer.charAt(0).toUpperCase() === optionLetter) {
+      } else if (selectedAnswerLetters.includes(optionLetter)) {
         style = { ...style, ...styles.optionLetterIncorrect };
       }
     }
@@ -275,7 +278,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     
     if (correctAnswerLetters.includes(optionLetter)) {
       return <CheckCircle style={{ ...styles.optionIcon, color: '#27ae60' }} />;
-    } else if (selectedAnswer.charAt(0).toUpperCase() === optionLetter) {
+    } else if (selectedAnswerLetters.includes(optionLetter)) {
       return <XCircle style={{ ...styles.optionIcon, color: '#e74c3c' }} />;
     }
     
@@ -318,11 +321,11 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         <button
           style={{
             ...(isMobile ? styles.submitButtonMobile : styles.submitButton),
-            ...(selectedAnswer ? {} : styles.submitButtonDisabled),
-            ...(isHovered && selectedAnswer ? styles.submitButtonHover : {})
+            ...(selectedAnswers.length > 0 ? {} : styles.submitButtonDisabled),
+            ...(isHovered && selectedAnswers.length > 0 ? styles.submitButtonHover : {})
           }}
           onClick={onSubmitAnswer}
-          disabled={!selectedAnswer}
+          disabled={selectedAnswers.length === 0}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >

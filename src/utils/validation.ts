@@ -40,11 +40,16 @@ export class ValidationUtils {
     }
 
     // Check required fields
-    const requiredFields = ['question_number', 'question', 'options', 'correct_answers'];
+    const requiredFields = ['question_number', 'question', 'options'];
     for (const field of requiredFields) {
       if (!(field in question)) {
         return { isValid: false, error: `Question at index ${index} is missing required field: ${field}` };
       }
+    }
+    
+    // Check for correct answer field (either correct_answer or correct_answers)
+    if (!('correct_answer' in question) && !('correct_answers' in question)) {
+      return { isValid: false, error: `Question at index ${index} is missing correct answer field (correct_answer or correct_answers)` };
     }
 
     // Validate question_number
@@ -57,34 +62,80 @@ export class ValidationUtils {
       return { isValid: false, error: `Question at index ${index} has invalid question text` };
     }
 
-    // Validate options
-    if (!Array.isArray(question.options) || question.options.length === 0) {
-      return { isValid: false, error: `Question at index ${index} has invalid options array` };
+    // Validate options (can be array or object)
+    if (Array.isArray(question.options)) {
+      if (question.options.length === 0) {
+        return { isValid: false, error: `Question at index ${index} has empty options array` };
+      }
+      if (question.options.some((option: any) => typeof option !== 'string' || option.trim().length === 0)) {
+        return { isValid: false, error: `Question at index ${index} has invalid option text` };
+      }
+    } else if (typeof question.options === 'object' && question.options !== null) {
+      const optionKeys = Object.keys(question.options);
+      if (optionKeys.length === 0) {
+        return { isValid: false, error: `Question at index ${index} has empty options object` };
+      }
+      for (const key of optionKeys) {
+        if (typeof question.options[key] !== 'string' || question.options[key].trim().length === 0) {
+          return { isValid: false, error: `Question at index ${index} has invalid option text for key ${key}` };
+        }
+      }
+    } else {
+      return { isValid: false, error: `Question at index ${index} has invalid options format (must be array or object)` };
     }
 
-    if (question.options.some((option: any) => typeof option !== 'string' || option.trim().length === 0)) {
-      return { isValid: false, error: `Question at index ${index} has invalid option text` };
+    // Validate correct answers (can be correct_answer string or correct_answers array)
+    if (question.correct_answers) {
+      if (Array.isArray(question.correct_answers)) {
+        if (question.correct_answers.length === 0) {
+          return { isValid: false, error: `Question at index ${index} has empty correct_answers array` };
+        }
+        if (question.correct_answers.some((answer: any) => typeof answer !== 'string' || answer.trim().length === 0)) {
+          return { isValid: false, error: `Question at index ${index} has invalid correct answer` };
+        }
+      } else if (typeof question.correct_answers === 'string') {
+        if (question.correct_answers.trim().length === 0) {
+          return { isValid: false, error: `Question at index ${index} has empty correct_answers string` };
+        }
+      } else {
+        return { isValid: false, error: `Question at index ${index} has invalid correct_answers format` };
+      }
+    } else if (question.correct_answer) {
+      if (typeof question.correct_answer !== 'string' || question.correct_answer.trim().length === 0) {
+        return { isValid: false, error: `Question at index ${index} has invalid correct_answer` };
+      }
     }
 
-    // Validate correct_answers
-    if (!Array.isArray(question.correct_answers) || question.correct_answers.length === 0) {
-      return { isValid: false, error: `Question at index ${index} has invalid correct_answers array` };
-    }
-
-    if (question.correct_answers.some((answer: any) => typeof answer !== 'string' || answer.trim().length === 0)) {
-      return { isValid: false, error: `Question at index ${index} has invalid correct answer` };
-    }
-
-    // Validate that correct answers reference valid option indices
-    const maxOptionIndex = question.options.length - 1;
-    const maxOptionLetter = String.fromCharCode(65 + maxOptionIndex); // A, B, C, etc.
+    // Validate that correct answers reference valid options
+    let optionCount: number;
+    let validOptionKeys: string[];
     
-    for (const answer of question.correct_answers) {
+    if (Array.isArray(question.options)) {
+      optionCount = question.options.length;
+      validOptionKeys = Array.from({ length: optionCount }, (_, i) => String.fromCharCode(65 + i)); // A, B, C, etc.
+    } else {
+      validOptionKeys = Object.keys(question.options).sort();
+      optionCount = validOptionKeys.length;
+    }
+    
+    // Get correct answers to validate
+    let answersToValidate: string[] = [];
+    if (question.correct_answers) {
+      if (Array.isArray(question.correct_answers)) {
+        answersToValidate = question.correct_answers;
+      } else {
+        answersToValidate = [question.correct_answers];
+      }
+    } else if (question.correct_answer) {
+      answersToValidate = [question.correct_answer];
+    }
+    
+    for (const answer of answersToValidate) {
       const answerLetter = answer.charAt(0).toUpperCase();
-      if (answerLetter < 'A' || answerLetter > maxOptionLetter) {
+      if (!validOptionKeys.includes(answerLetter)) {
         return { 
           isValid: false, 
-          error: `Question at index ${index} has correct answer '${answer}' that doesn't match available options` 
+          error: `Question at index ${index} has correct answer '${answer}' that doesn't match available options (${validOptionKeys.join(', ')})` 
         };
       }
     }

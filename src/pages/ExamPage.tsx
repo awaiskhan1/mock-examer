@@ -11,7 +11,7 @@ const ExamPage: React.FC = () => {
     allQuestions,
     currentQuestionIndex,
     userAnswers,
-    selectedAnswer,
+    selectedAnswers,
     showFeedback,
     isAnswered,
     uploadedFileName,
@@ -155,7 +155,7 @@ const ExamPage: React.FC = () => {
           {currentQuestion && (
             <QuestionCard
               question={currentQuestion}
-              selectedAnswer={selectedAnswer}
+              selectedAnswers={selectedAnswers}
               showFeedback={showFeedback}
               isAnswered={isAnswered}
               onAnswerSelect={handleAnswerSelect}
